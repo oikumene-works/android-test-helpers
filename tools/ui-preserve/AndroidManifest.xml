@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="qa.capture.preserve" android:versionCode="1" android:versionName="0.1">
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36"/>
+  <application android:label="Preserving UI capture prototype" android:debuggable="true" android:allowBackup="false"/>
+  <instrumentation android:name=".DumpInstrumentation" android:targetPackage="qa.capture.preserve" android:functionalTest="true"/>
+</manifest>
