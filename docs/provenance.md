@@ -67,7 +67,7 @@ The package's [MIT license](../LICENSE) follows the
 [published MIT license text](https://opensource.org/license/mit). It permits
 reuse and modification, including commercial use, while requiring retention
 of the copyright and permission notice. It includes the standard warranty
-disclaimer. This is the proposed license for this repository's own code,
+disclaimer. This license covers this repository's own code,
 tests, examples and documentation; it does not relicense external tools,
 platforms or private test evidence.
 
