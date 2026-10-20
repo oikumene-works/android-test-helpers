@@ -209,6 +209,16 @@ elif command[:2] == ["shell", "settings"] and len(command) == 5:
               ("secure", "default_input_method"): "org.example.ime/.Keyboard",
               ("global", "auto_time"): "0", ("global", "auto_time_zone"): "0",
               ("system", "time_12_24"): "24"}
+    if command[4] == "time_12_24":
+        if scenario == "time_format_error":
+            print("null")
+            print("settings read failed", file=sys.stderr)
+            sys.exit(1)
+        values[("system", "time_12_24")] = {
+            "time_format_12": "12",
+            "empty_time_format": "",
+            "unknown_time_format": "unexpected",
+        }.get(scenario, "24")
     print("null" if ((scenario == "missing_metadata" and command[4] == "font_scale")
                     or (scenario == "default_time_format" and command[4] == "time_12_24"))
           else values[tuple(command[3:])])

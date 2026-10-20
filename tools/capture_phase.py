@@ -96,6 +96,7 @@ class Capture:
                 "Provided context is not verified by this tool.",
                 "PNG structure and XML parsing do not verify the visible test result.",
                 "System/app locale settings do not establish the actual UI language.",
+                "Clock preferences do not establish the app's displayed clock format.",
                 "Package path does not establish APK provenance or foreground identity.",
             ],
         }
@@ -323,6 +324,22 @@ class Capture:
         self.data["metadata"][name] = item
         return item
 
+    def time_format(self):
+        item = self.probe("time_format", ["settings", "get", "system", "time_12_24"])
+        record = self.data["commands"]["time_format"]
+        if record["status"] != "ok":
+            return
+        value = self.output(record).decode("utf-8", errors="replace").strip()
+        if value == "null":
+            # Android falls back to the context's locale when no preference is set.
+            item.update(status="ok", value=None, mode="locale_default")
+            item.pop("error", None)
+        elif value in ("12", "24"):
+            item["mode"] = "explicit"
+        elif value:
+            item.update(status="missing", value=None,
+                        error="unrecognized time format; expected 12, 24 or null")
+
     def system_locale(self):
         primary = self.probe("system_locale", ["getprop", "persist.sys.locale"])
         primary["value_format"] = "locale_property"
@@ -366,10 +383,10 @@ class Capture:
                 "device_timezone": ["getprop", "persist.sys.timezone"],
                 "automatic_time": ["settings", "get", "global", "auto_time"],
                 "automatic_timezone": ["settings", "get", "global", "auto_time_zone"],
-                "time_format": ["settings", "get", "system", "time_12_24"],
             }
             for name, command in probes.items():
                 self.probe(name, command)
+            self.time_format()
             self.system_locale()
             self.probe("input_state", ["dumpsys", "input_method"],
                        r"mInputShown=|mShowRequested=|mCurMethodId=|mCurrentSubtype=|mCurFocusedWindow=")

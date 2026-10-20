@@ -297,11 +297,47 @@ class CaptureTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertEqual(data["metadata"]["system_locale"]["primary_probe"]["status"], "failed")
 
-    def test_default_time_format_remains_partial_with_useful_cli_summary(self):
-        result, _, data = self.run_capture("default_time_format")
+    def test_default_time_format_is_complete_without_guessing_displayed_hours(self):
+        result, directory, data = self.run_capture("default_time_format")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(data["status"], "complete")
+        clock = data["metadata"]["time_format"]
+        self.assertEqual(clock["status"], "ok")
+        self.assertEqual(clock["mode"], "locale_default")
+        self.assertIsNone(clock["value"])
+        self.assertNotIn("error", clock)
+        self.assertEqual((directory / "time_format.txt").read_text(), "null\n")
+        self.assertNotIn("Needs review", result.stdout)
+
+    def test_explicit_clock_preferences_are_preserved(self):
+        for scenario, value in (("time_format_12", "12"), ("success", "24")):
+            with self.subTest(value=value):
+                result, _, data = self.run_capture(scenario)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                clock = data["metadata"]["time_format"]
+                self.assertEqual(clock["status"], "ok")
+                self.assertEqual(clock["mode"], "explicit")
+                self.assertEqual(clock["value"], value)
+
+    def test_empty_time_format_is_still_partial(self):
+        result, _, data = self.run_capture("empty_time_format")
         self.assertEqual(result.returncode, 1)
         self.assertEqual(data["metadata"]["time_format"]["status"], "missing")
+        self.assertNotIn("mode", data["metadata"]["time_format"])
         self.assertIn("metadata.time_format=missing", result.stdout)
+
+    def test_failed_clock_read_cannot_become_a_valid_default(self):
+        directory, data = self.assert_partial("time_format_error", "metadata", "time_format")
+        self.assertNotIn("mode", data["metadata"]["time_format"])
+        self.assertEqual((directory / "time_format.txt").read_text(), "null\n")
+        self.assertIn("settings read failed", (directory / "time_format.stderr.txt").read_text())
+
+    def test_unknown_clock_output_is_not_an_explicit_preference(self):
+        directory, data = self.assert_partial(
+            "unknown_time_format", "metadata", "time_format", status="missing")
+        self.assertNotIn("mode", data["metadata"]["time_format"])
+        self.assertIn("unrecognized", data["metadata"]["time_format"]["error"])
+        self.assertEqual((directory / "time_format.txt").read_text(), "unexpected\n")
 
     def test_missing_window_focus_is_not_hidden(self):
         self.assert_partial("window_focus_missing", "metadata", "window_focus", status="missing")

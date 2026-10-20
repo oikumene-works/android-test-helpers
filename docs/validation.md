@@ -27,6 +27,16 @@ on 19 October 2026. The added example test also passed. These checks do not
 launch an emulator or contact a phone or network. They do not establish
 Android runtime behavior, other host compatibility or a Python-version matrix.
 
+On 20 October 2026, Codex corrected the interpretation of an unset clock
+preference. The CLI regression checks cover a successful `null` response,
+explicit `12`/`24` preferences, empty and unexpected output, and a failed read
+that nevertheless prints `null`. Only the valid default/explicit cases may
+complete. An unrelated missing setting remains partial. Codex also replayed
+the retained clock command's successful `null` response locally; the original
+capture was not changed. This is interpretation and synthetic CLI validation,
+not a new phone or emulator run. All 62 local tests passed on Linux with
+Python 3.14.7 after this change.
+
 ## Previously recorded device evidence
 
 The initial publication preserves the helper source bytes from the local
@@ -45,8 +55,8 @@ The prototype and integration environments and temporary installations were
 cleaned up in their original runs. Publication preparation did not reopen
 them. It added device-free examples and reran appropriate local checks.
 
-GrapheneOS, arbitrary accessibility services and broad device/version coverage
-are unverified. No new AutoScroller test was performed with the preserving
-method. A declared minSdk is not a passed compatibility range. Screenshot,
-tree and context times differ because capture is sequential. Report these
-limits alongside any use of the results.
+The preserving method on GrapheneOS, arbitrary accessibility services and broad
+device/version coverage are unverified. No new AutoScroller test was performed
+with the preserving method. A declared minSdk is not a passed compatibility
+range. Screenshot, tree and context times differ because capture is sequential.
+Report these limits alongside any use of the results.

@@ -88,8 +88,20 @@ font scale, input method/state, window focus and clock settings.
 | `2` / `failed` | Neither artifact passes. Invalid arguments or local storage errors also return 2; inspect stderr. |
 | `130` | Interrupted; inspect any saved metadata and cleanup state. |
 
-`Needs review` summarizes incomplete fields. A `null` time format or empty
-setting is retained as missing, not guessed. If `persist.sys.locale` is empty,
+`Needs review` summarizes incomplete fields. A successful `time_12_24` read
+returning `null` means that no explicit clock preference is set. Capture
+records `time_format` as `status: ok`, `value: null`, `mode: locale_default`.
+Explicit `12` or `24` values are retained with `mode: explicit`. Empty output,
+an unrecognized value or a failed command still makes the capture partial.
+The raw output is always retained.
+
+Android's [DateFormat implementation](https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/text/format/DateFormat.java)
+uses the context's locale when this preference is unset. The helper does not
+resolve that fallback or infer the app's displayed clock format. Codex corrected
+the earlier missing-value classification after an otherwise valid capture
+returned `null`; earlier evidence is retained with its original status.
+
+If `persist.sys.locale` is empty,
 the helper tries `am get-config` and preserves Android resource qualifiers
 such as `en-rUS` without presenting them as normalized language tags. Unknown
 formats remain incomplete. Window focus uses the full `dumpsys window` output.
